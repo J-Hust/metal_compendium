@@ -1,0 +1,51 @@
+#	
+#the real deal
+#
+	
+library(RCurl)
+library(rjson)
+library(plyr)
+
+#set URL variables
+url1 <- "http://www.metal-archives.com/browse/ajax-letter/l/"
+url2 <- "/json/1?sEcho=2&iColumns=4&sColumns=&iDisplayStart="
+url3 <- "&iDisplayLength=2000&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&_=1462052260436"
+l <- "a"
+j <- 1
+
+#loop through all letters
+for (l in letters)
+	{
+		#First pass - establish df for letter
+		x <- fromJSON(getURL(paste0(url1, l, url2, j, url3)))
+
+		x <- lapply(x, function(aaData)
+		{
+		data.frame(matrix(unlist(aaData), ncol=4, byrow=TRUE))
+		})
+
+		x <- do.call(rbind, x)
+		
+		#get count of records and rename df
+		maxrecord <- x[1,1]
+		assign("bands", x)
+		
+		j<-j+499
+		maxrecord <- as.numeric(maxrecord)
+		maxrecord<- round_any(maxrecord, 500, f=floor)
+		#loop over all records for particular letter
+		while (j<maxrecord)
+			{
+			x <- fromJSON(getURL(paste0(url1, l, url2, j, url3)))
+
+			x <- lapply(x, function(aaData)
+			{
+			data.frame(matrix(unlist(aaData), ncol=4, byrow=TRUE))
+			})
+
+			x <- do.call(rbind, x)
+			bands <- rbind(bands, x)
+			j<-j+500
+			}
+	}
+			

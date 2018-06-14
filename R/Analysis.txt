@@ -1,0 +1,13 @@
+#Variance of album review score
+library(stringr)
+library(dplyr)
+
+#Get album id for join
+albums$albumid <- str_extract(albums$V6, "[:digit:]+(?=\")")
+reviews$albumid <- str_extract(reviews$X4, "[:digit:]+(?=\")")
+
+#variance by album from review table
+reviews$Variance <- ave(as.numeric(str_replace_all(reviews$X5, '%', ''))/100, reviews$X4, FUN=var)
+
+#join variance with album table
+albums2 <- left_join(albums, select(reviews, one_of(c('X4', 'Variance'))), by=c('??'='X4'))
