@@ -15,6 +15,8 @@ const scrapeAlbum = async () => {
 
   let id = 745
 
+  await db.sync()
+
   await throttledRequest(
     `https://www.metal-archives.com/band/discography/id/${id}/tab/all`,
     (err, response, body) => {
@@ -23,31 +25,22 @@ const scrapeAlbum = async () => {
       } else {
         dom = new JSDOM(body)
 
-        // Array.from(
-        //   dom.window.document.getElementsByTagName('tbody')[0].children
-        // ).forEach(child => {
-        //   Album.create({
-        //     bandId: id,
-        //     albumId: '',
-        //     name: child.children[0].textContent,
-        //     type: child.children[1].textContent,
-        //     year: child.children[2].textContent,
-        //     reviews: child.children[3].textContent
-        //   })
-        // })
+        Array.from(
+          dom.window.document.getElementsByTagName('tbody')[0].children
+        ).forEach(child => {
+          let theurl = child.children[0].innerHTML.split(' ')[1]
 
-        console.log(
-          dom.window.document.getElementsByTagName('tbody')[0].children[0]
-            .children[0].textContent
-        )
-
-        console.log(
-          Array.from(
-            dom.window.document.getElementsByTagName('tbody')[0].children
-          ).forEach(child => {
-            console.log('url',child.children[0].innerHTML.slice(child.children[0].innerHTML.indexOf('"')+1, child.children[0].innerHTML.indexOf('class') -2) , 'name', child.children[0].textContent, 'type', child.children[1].textContent, 'year', child.children[2].textContent, 'reviews', child.children[3].textContent)
+          Album.create({
+            bandId: id,
+            albumId: theurl.slice(
+              theurl.lastIndexOf('/') + 1, theurl.length - 1
+            ),
+            name: child.children[0].textContent,
+            type: child.children[1].textContent,
+            year: child.children[2].textContent,
+            reviews: child.children[3].textContent.replace(/\s/g,'')
           })
-        )
+        })
       }
     }
   )

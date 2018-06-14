@@ -14,8 +14,6 @@ throttledRequest.configure({
 
 let scrapeBand = async (url) => {
 
-  // let url = 'https://www.metal-archives.com/bands/A_Murder_of_Crows/3540317655'
-
   let dom
 
   await throttledRequest(url, (err, response, body) => {
@@ -25,8 +23,6 @@ let scrapeBand = async (url) => {
       // console.log('body type', typeof body)
       // console.log('body', body)
       dom = new JSDOM(body)
-
-
 
       Band.create({
         bandId: url.slice(url.lastIndexOf('/')+1, url.length),
