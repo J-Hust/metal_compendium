@@ -4,46 +4,55 @@ const {JSDOM} = jsdom
 const db = require('../server/db')
 const {Album} = require('../server/db/models')
 let throttledRequest = require('throttled-request')(request)
+let fs = require('fs')
 
 throttledRequest.configure({
   requests: 2,
   milliseconds: 1000
 })
 
-const scrapeAlbum = async () => {
+const scrapeAlbum = async id => {
   let dom
-
-  let id = 745
-
-  await db.sync()
 
   await throttledRequest(
     `https://www.metal-archives.com/band/discography/id/${id}/tab/all`,
     (err, response, body) => {
       if (err) {
-        console.err('got an error', err)
-      } else {
+        console.log('got an error', err)
+      } else if (body) {
         dom = new JSDOM(body)
 
         Array.from(
           dom.window.document.getElementsByTagName('tbody')[0].children
         ).forEach(child => {
-          let theurl = child.children[0].innerHTML.split(' ')[1]
+          try {
+            let theurl = child.children[0].innerHTML.split(' ')[1]
 
-          Album.create({
-            bandId: id,
-            albumId: theurl.slice(
-              theurl.lastIndexOf('/') + 1, theurl.length - 1
-            ),
-            name: child.children[0].textContent,
-            type: child.children[1].textContent,
-            year: child.children[2].textContent,
-            reviews: child.children[3].textContent.replace(/\s/g,'')
-          })
+            let albumId = theurl.slice(
+              theurl.lastIndexOf('/') + 1,
+              theurl.length - 1
+            )
+            let name = child.children[0].textContent
+            let type = child.children[1].textContent
+            let year = child.children[2].textContent
+            let reviewSummary = child.children[3].textContent.replace(/\s/g, '')
+            Album.create({
+              bandId: id,
+              albumId: albumId,
+              name: name,
+              type: type,
+              year: year,
+              reviewSummary: reviewSummary
+            })
+          } catch(error) {
+            //most likely there are no albums for this band.
+            //write to file
+            fs.writeFile('./err.txt', error + child.innerHTML)
+          }
         })
       }
     }
   )
 }
 
-scrapeAlbum()
+module.exports = scrapeAlbum

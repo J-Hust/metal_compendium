@@ -1,25 +1,25 @@
 const Sequelize = require('sequelize')
 const db = require('../db')
 
-const Album = db.define('album', {
+const Review = db.define('review', {
+  reviewId: {
+    type: Sequelize.STRING,
+  },
   bandId: {
     type: Sequelize.STRING
   },
   albumId: {
-    type: Sequelize.STRING,
-  },
-  name: {
     type: Sequelize.STRING
   },
-  type: {
-    type: Sequelize.STRING
-  },
-  year: {
+  score: {
     type: Sequelize.INTEGER
   },
-  reviewSummary: {
+  reviewer: {
     type: Sequelize.STRING
+  },
+  date: {
+    type: Sequelize.DATEONLY
   }
 })
 
-module.exports = Album
+module.exports = Review

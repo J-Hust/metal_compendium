@@ -16,15 +16,13 @@ let scrapeBand = async (url) => {
 
   let dom
 
-  await throttledRequest(url, (err, response, body) => {
+  await throttledRequest(url, async (err, response, body) => {
     if (err){
       console.log('got an errror', err)
     } else {
-      // console.log('body type', typeof body)
-      // console.log('body', body)
       dom = new JSDOM(body)
 
-      Band.create({
+      await Band.create({
         bandId: url.slice(url.lastIndexOf('/')+1, url.length),
         name: dom.window.document.getElementById('band_info').children[0].textContent,
         country: dom.window.document.getElementById('band_stats').children[0].children[1].textContent,
@@ -37,6 +35,7 @@ let scrapeBand = async (url) => {
         years_active: dom.window.document.getElementById('band_stats').children[2].children[1].textContent.replace(/\s/g,'')
 
       })
+
     }
   })
 }

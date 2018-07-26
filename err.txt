@@ -1,0 +1,3 @@
+TypeError: Cannot read property 'textContent' of undefined
+				<td colspan="5"><em>Nothing entered yet. Please add the releases, if applicable. </em></td>
+			

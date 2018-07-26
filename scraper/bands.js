@@ -1,7 +1,13 @@
 var request = require('request-promise')
 let scrapeBand = require('./bandSingle.js')
+let scrapeAlbum = require('./albums.js')
+let scrapeReview = require('./reviews.js')
 const db = require('../server/db')
 let throttledRequest = require('throttled-request')(request)
+let fs = require('fs')
+
+// bandId goes wrong when apostrophe is present in band name  
+
 
 throttledRequest.configure({
   requests: 2,
@@ -9,9 +15,37 @@ throttledRequest.configure({
 })
 
 const scrape = async () => {
-  await db.sync({force: true})
+  await db.sync({force: false})
 
-  let letters = ['nbr', 'z']
+  let letters = [
+    // 'nbr',
+    // 'a',
+    // 'b',
+    // 'c',
+    // 'd',
+    // 'e',
+    // 'f',
+    // 'g',
+    // 'h',
+    // 'i',
+    // 'j',
+    // 'k',
+    // 'l',
+    // 'm',
+    // 'n',
+    // 'o',
+    // 'p',
+    // 'q',
+    // 'r',
+    // 's',
+    // 't',
+    // 'u',
+    // 'v',
+    // 'w',
+    // 'x',
+    // 'y',
+    'z'
+  ]
 
   let url1 = 'http://www.metal-archives.com/browse/ajax-letter/l/'
   let url2 = '/json/1?sEcho=2&iColumns=4&sColumns=&iDisplayStart='
@@ -20,31 +54,55 @@ const scrape = async () => {
 
   let info
 
+  let urls = []
+
   await letters.forEach(async letter => {
     let i = 1
     let total = 2
     let bandUrl
+    let bandId
+
     while (i <= total) {
-      await throttledRequest(url1 + letter + url2 + url3, (err, response, body) => {
-        if (err) {
-          console.log('got an error', err)
-        } else {
-          info = JSON.parse(body)
-          total = info.iTotalRecords
-          info.aaData.forEach(async item => {
-            bandUrl = item[0].slice(
-              item[0].indexOf("'") + 1,
-              item[0].lastIndexOf("'")
-            )
-            scrapeBand(bandUrl)
-          })
+      console.log('i at top', i)
+      console.log('total at top', total)
+      await throttledRequest(
+        url1 + letter + url2 + i + url3,
+        (err, response, body) => {
+          if (err) {
+            console.log('got an error', err)
+          } else if (body) {
+            try {
+              info = JSON.parse(body)
+              total = info.iTotalRecords
+              info.aaData.forEach(item => {
+                bandUrl = item[0].slice(
+                  item[0].indexOf("'") + 1,
+                  item[0].lastIndexOf("'")
+                )
+                // console.log(letter, ': ', total)
+                // urls.push(bandUrl)
+
+                bandId = bandUrl.slice(
+                  bandUrl.lastIndexOf('/') + 1,
+                  bandUrl.length
+                )
+                scrapeBand(bandUrl)
+                scrapeAlbum(bandId)
+              })
+              console.log(urls.length)
+            } catch (error) {
+              console.log(error)
+              fs.writeFile('./bandserr.txt', error + body)
+            }
+          }
         }
-      })
-      i = i + 499
+      )
+      i = i + 500
     }
   })
+  // console.log('end length', urls.length)
+  // fs.writeFile('./urls.txt', urls)
 }
 
 scrape()
-
-db.close()
+scrapeReview()

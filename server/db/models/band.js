@@ -3,7 +3,7 @@ const db = require('../db')
 
 const Band = db.define('band', {
   bandId: {
-    type: Sequelize.STRING
+    type: Sequelize.STRING,
   },
   name: {
     type: Sequelize.STRING
