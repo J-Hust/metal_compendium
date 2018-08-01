@@ -11,6 +11,11 @@ throttledRequest.configure({
   milliseconds: 1000
 })
 
+// Get page of album id
+// Create array of albums
+// For each album
+  // create in db
+
 const scrapeAlbum = async id => {
   let dom
 
@@ -24,7 +29,7 @@ const scrapeAlbum = async id => {
 
         Array.from(
           dom.window.document.getElementsByTagName('tbody')[0].children
-        ).forEach(child => {
+        ).forEach(async child => {
           try {
             let theurl = child.children[0].innerHTML.split(' ')[1]
 
@@ -36,7 +41,7 @@ const scrapeAlbum = async id => {
             let type = child.children[1].textContent
             let year = child.children[2].textContent
             let reviewSummary = child.children[3].textContent.replace(/\s/g, '')
-            Album.create({
+            await Album.create({
               bandId: id,
               albumId: albumId,
               name: name,

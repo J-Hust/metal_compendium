@@ -11,6 +11,11 @@ throttledRequest.configure({
   milliseconds: 1000
 })
 
+// For each letter in alphabet
+  // get JSON of reviews
+  // for each review in JSON
+    // create in db
+
 const ScrapeReview = async () => {
   let dom
 

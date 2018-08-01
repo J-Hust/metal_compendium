@@ -10,7 +10,9 @@ throttledRequest.configure({
   milliseconds: 1000
 })
 
-
+// Make request to band page
+  // Create virtual DOM
+  // Put info from virtual DOM into db
 
 let scrapeBand = async (url) => {
 

@@ -6,7 +6,14 @@ const db = require('../server/db')
 let throttledRequest = require('throttled-request')(request)
 let fs = require('fs')
 
-// bandId goes wrong when apostrophe is present in band name  
+// bandId goes wrong when apostrophe is present in band name
+
+// For each letter in alphabet
+  // get JSON of bands
+  // for each band in JSON
+    // Scrape band
+    // scrape album
+    // if error, write to file (which gets overwritten...)
 
 
 throttledRequest.configure({
@@ -15,11 +22,11 @@ throttledRequest.configure({
 })
 
 const scrape = async () => {
-  await db.sync({force: false})
+  await db.sync({force: true})
 
   let letters = [
-    // 'nbr',
-    // 'a',
+    'nbr',
+    'a',
     // 'b',
     // 'c',
     // 'd',
@@ -44,7 +51,7 @@ const scrape = async () => {
     // 'w',
     // 'x',
     // 'y',
-    'z'
+    // 'z'
   ]
 
   let url1 = 'http://www.metal-archives.com/browse/ajax-letter/l/'
@@ -56,7 +63,8 @@ const scrape = async () => {
 
   let urls = []
 
-  await letters.forEach(async letter => {
+  // await letters.forEach(async letter => {
+  for (let z = 0; z < letters.length; z++){
     let i = 1
     let total = 2
     let bandUrl
@@ -66,18 +74,19 @@ const scrape = async () => {
       console.log('i at top', i)
       console.log('total at top', total)
       await throttledRequest(
-        url1 + letter + url2 + i + url3,
-        (err, response, body) => {
+        url1 + letters[z] + url2 + i + url3,
+         (err, response, body) => {
           if (err) {
             console.log('got an error', err)
           } else if (body) {
             try {
               info = JSON.parse(body)
               total = info.iTotalRecords
-              info.aaData.forEach(item => {
-                bandUrl = item[0].slice(
-                  item[0].indexOf("'") + 1,
-                  item[0].lastIndexOf("'")
+              for (let x = 0; x < info.aaData.length; x++){
+              // info.aaData.forEach(item => {
+                bandUrl = info.aaData[x][0].slice(
+                  info.aaData[x][0].indexOf("'") + 1,
+                  info.aaData[x][0].lastIndexOf("'")
                 )
                 // console.log(letter, ': ', total)
                 // urls.push(bandUrl)
@@ -88,7 +97,7 @@ const scrape = async () => {
                 )
                 scrapeBand(bandUrl)
                 scrapeAlbum(bandId)
-              })
+              }
               console.log(urls.length)
             } catch (error) {
               console.log(error)
@@ -99,10 +108,10 @@ const scrape = async () => {
       )
       i = i + 500
     }
-  })
+  }
   // console.log('end length', urls.length)
   // fs.writeFile('./urls.txt', urls)
 }
 
 scrape()
-scrapeReview()
+// scrapeReview()
