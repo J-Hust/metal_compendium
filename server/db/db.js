@@ -40,7 +40,7 @@ const operatorsAliases = {
 };
 
 // const databaseName = pkg.name + (process.env.NODE_ENV === 'test' ? '-test' : '')
-const databaseName = 'mtest'
+const databaseName = 'metal_compendium'
 
 const db = new Sequelize(
   process.env.DATABASE_URL || `postgres://localhost:5432/${databaseName}`, {logging: false}
